@@ -251,7 +251,7 @@ sub setup_spark_for_tarball(){
             }
         }
         my $spark_hdp_assembly_jar = "spark-hdp-assembly.jar";
-        my @spark_assembly_jars = glob("$spark_home/lib/spark-assembly*2.4.2.0-12*hadoop*2.4.2.0-12.jar");
+        my @spark_assembly_jars = glob("$spark_home/lib/spark-assembly*$hdp_version*hadoop*$hdp_version.jar");
         print "Spark Assembly Jar: ", join(" ",@spark_assembly_jars), "\n";
         if(scalar(@spark_assembly_jars) > 0 && $spark_assembly_jars[0] && $spark_assembly_jars[0] =~ /^.*spark-assembly.*$hdp_version.*hadoop.*$hdp_version.jar\s*$/){
               my $spark_assembly_jar = basename($spark_assembly_jars[0]);
