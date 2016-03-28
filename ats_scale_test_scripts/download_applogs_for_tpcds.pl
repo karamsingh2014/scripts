@@ -3,7 +3,7 @@ use warnings;
 use Getopt::Long;
 use Cwd 'abs_path';
 #1443665985063
-my @apps = ();
+my %apps = ();
 my $pattern ="./query*.log";
 #my @files = glob($pattern);
 my $target_dir = "/grid/4/home/ksingh/folded_mg_trace/download_applogs";
@@ -29,12 +29,11 @@ sub app_list($){
     if(open(FH, $file_name)){
         while(my $line=<FH>){
            #print $line;
-           if($line =~ /Running \(Executing on YARN cluster with App id application_\d{13}_\d+\)/i){   
+           if($line =~ /Running \(Executing on YARN cluster with App id (application_\d{13}_\d+)\).*$/i){ 
                if ($1){
                   my $appid = $1;
                   #$appid =~ s/job/application/;
-                  push @apps, $appid;
-
+                  $apps{$appid} = 1 unless ($apps{$appid});
                }
            }
       }
@@ -46,10 +45,10 @@ sub download_applogs(){
     foreach my $file (@files){
        app_list($file);
    }
-   print "\n", join("\n",@apps),"\n";
-   return;
+   #print "\n", join("\n",keys %apps),"\n";
+   #return;
    #sleep(20);
-   foreach my $id (@apps){
+   foreach my $id (keys %apps){
      my $out_file= "$target_dir/${id}.log";
      if (-e $out_file && -s $out_file){
         print $id, "\n"; #next;
@@ -67,5 +66,6 @@ sub download_applogs(){
 while(1){
     #sleep(300);
     download_applogs();
-    #@apps = ();
+    #%apps = ();
+    last;
 }
