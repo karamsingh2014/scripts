@@ -37,7 +37,7 @@ sub help_msg{
     print " -u | --users-file=<users file/<users-list>, absolute path of users file/file container users mapping, Required if -s/--submit-resolver=roundrobin>\n\t";
     print " -p | --submit-policy=<GridMix Submission Policy, Accepted values REPLAY/SERIAL/STRESS, default: REPLAY>\n\t";
     print " -j | --job-type=<GridMix job types, Accepted values LOADJOB/SLEEPJOB, default: SLEEPJOB>\n\t";
-    print " -t | --submit-threads=<GridMix Client submit threads, default: 5>\n\t -d | --pending-queue-depth=<GridMix pending queue depth, default: 10>\n\t";
+    print " -r | --submit-threads=<GridMix Client submit threads, default: 5>\n\t -d | --pending-queue-depth=<GridMix pending queue depth, default: 10>\n\t";
     print " -m | --submit-multiplier=<gridmix.submit.multiplier:default: 0.0001. The multiplier to accelerate/decelerate the submission. The time separating two jobs multiplier factor>\n\t";
     print " -e | --max-sleep=<-Dgridmix.sleep.max-map-time/-Dgridmix.sleep.max-reduce-time in milliseconds: default 500ms>\n\t";
     print " --hadoop-home=<hadoop home/hadoop common home path>\n\t --hdfs-home=<hadoop hdfs home path>\n\t --mr-home=<hadoop mapreduce home>\n\t --yarn-home=<hadoop yarn home>\n\t";
