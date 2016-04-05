@@ -132,7 +132,7 @@ $ENV{'HADOOP_CONF_DIR'} = $hadoop_conf;
 $ENV{'HADOOP_LIBEXEC_DIR'} = $hadoop_libexec_dir;
 $ENV{'TEZ_HOME'} = $tez_home;
 $ENV{'TEZ_CONF_DIR'} = $tez_conf;
-my $common_cmd = "$hadoop_home/bin/hadoop org.apache.hadoop.mapred.gridmix.Gridmix -libjars \"$rumen_jar,$gridmix_jar\" \"-Dgridmix.min.file.size=0\" \"-Dgridmix.client.pending.queue.depth=$pending_queue_depth\" \"-Dgridmix.job-submission.policy=$policy\" \"-Dgridmix.client.submit.threads=$submit_threads\" \"-Dgridmix.submit.multiplier=$submit_multiplier\" \"-Dgridmix.job.type=$job_type\" \"-Dmapreduce.framework.name=$framework\" \"-Dtez.queue.name=$queue\" \"-Dmapreduce.job.queuename=$queue\" \"-Dmapred.job.queue.name=$queue\" \"-Dipc.client.connect.max.retries=10\" \"-Dgridmix.sleep.max-map-time=$max_sleep\" \"-Dgridmix.sleep.max-reduce-time=$max_sleep\"";
+my $common_cmd = "$hadoop_home/bin/hadoop org.apache.hadoop.mapred.gridmix.Gridmix -libjars \"$rumen_jar,$gridmix_jar\" \"-Dgridmix.min.file.size=0\" \"-Dgridmix.client.pending.queue.depth=$pending_queue_depth\" \"-Dgridmix.job-submission.policy=$policy\" \"-Dgridmix.client.submit.threads=$submit_threads\" \"-Dgridmix.submit.multiplier=$submit_multiplier\" \"-Dgridmix.job.type=$job_type\" \"-Dmapreduce.framework.name=$framework\" \"-Dtez.queue.name=$queue\" \"-Dmapreduce.job.queuename=$queue\" \"-Dmapred.job.queue.name=$queue\" \"-Dipc.client.connect.max.retries=3\" \"-Dgridmix.sleep.max-map-time=$max_sleep\" \"-Dgridmix.sleep.max-reduce-time=$max_sleep\"";
 
 for(my $i=0; $i < $num_runs; $i++){
     my $outfile = "$output_path/gm_${queue}_$i.out";
