@@ -28,6 +28,7 @@ my $hadoop_version = undef;
 my $hadoop_conf = $ENV{'HADOOP_CONF_DIR'} || '/grid/4/home/ksingh/folded_mg_trace/hadoop-conf1';
 my $tez_conf = $ENV{'TEZ_CONF_DIR'} || '/grid/4/home/ksingh/tez-conf';
 my $hadoop_libexec_dir = $ENV{'HADOOP_LIBEXEC_DIR'} || "$hadoop_home/libexec";
+my $hadoop_heap_size = "2560";
 sub help_msg{
     my $exit_status = shift @_ || 0;
     print "Usage $0: $0 <Options>\n\t -t | --trace-path=<[REQUIRED] GridMix rumen trace absolute path>\n\t -n | --num-runs=<Number of GridMix runs, default 1>\n\t";
@@ -41,7 +42,8 @@ sub help_msg{
     print " -m | --submit-multiplier=<gridmix.submit.multiplier:default: 0.0001. The multiplier to accelerate/decelerate the submission. The time separating two jobs multiplier factor>\n\t";
     print " -e | --max-sleep=<-Dgridmix.sleep.max-map-time/-Dgridmix.sleep.max-reduce-time in milliseconds: default 500ms>\n\t";
     print " --hadoop-home=<hadoop home/hadoop common home path>\n\t --hdfs-home=<hadoop hdfs home path>\n\t --mr-home=<hadoop mapreduce home>\n\t --yarn-home=<hadoop yarn home>\n\t";
-    print " --hadoop-conf=<hadoop conf dir>\n\t --java-home=<java home>\n\t --tez-home=< tez home path>\n\t --tez-conf=<tez conf dir>\n\t --hadoop-version=<hadoop version string>\n";
+    print " --hadoop-conf=<hadoop conf dir>\n\t --java-home=<java home>\n\t --tez-home=< tez home path>\n\t --tez-conf=<tez conf dir>\n\t --hadoop-version=<hadoop version string>\n\t";
+    print " --hadoop-heap-size=<integer value of java heap size for hadoop in mb e.g --hadoop-heap-size=1536 for 1.5g default:2560 2.5g>\n";
     exit $exit_status;
 }
 GetOptions ("trace-path|t=s" => \$trace_path, "num-runs|n=i" => \$num_runs, "queue|q=s" => \$queue, "framework-name|f=s" => \$framework, "submit-resolver|s=s" => \$user_resolver,
@@ -49,7 +51,7 @@ GetOptions ("trace-path|t=s" => \$trace_path, "num-runs|n=i" => \$num_runs, "que
             "submit-multiplier|m=f" => \$submit_multiplier, "max-sleep|e=i" => \$max_sleep, "pending-queue-dept|d=i" => \$pending_queue_depth, "input-data-size|a=s" => \$input_data,
             "output-path|o=s" => \$output_path, "hadoop-home=s" => \$hadoop_home, "hdfs-home=s" => \$hdfs_home, "mr-home=s" =>\$mr_home, "yarn-home=s" => \$yarn_home,
             "java-home=s" => \$java_home, "hadoop-conf=s" => \$hadoop_conf, "tez-home=s" =>\$tez_home, "tez-conf=s" => \$tez_conf, "hadoop-version=s" => \$hadoop_version,
-            "help|h" => sub {help_msg(0)}) or die("Error in command line arguments\n");
+            "hadoop-heap-size=i" => \$hadoop_heap_size,"help|h" => sub {help_msg(0)}) or die("Error in command line arguments\n");
 unless($trace_path && -f $trace_path && -r $trace_path ){
     print STDERR "ERROR: Invalid trace-path specified. Not specified/Not file/Not readable\n";
     help_msg(1);
@@ -132,7 +134,8 @@ $ENV{'HADOOP_CONF_DIR'} = $hadoop_conf;
 $ENV{'HADOOP_LIBEXEC_DIR'} = $hadoop_libexec_dir;
 $ENV{'TEZ_HOME'} = $tez_home;
 $ENV{'TEZ_CONF_DIR'} = $tez_conf;
-$ENV{HADOOP_HEAPSIZE} = '2560';
+$ENV{'HADOOP_HEAPSIZE'} = $hadoop_heap_size;
+$ENV{'HADOOP_CLIENT_OPTS'} = "-Xmx${hadoop_heap_size}m";
 my $common_cmd = "$hadoop_home/bin/hadoop org.apache.hadoop.mapred.gridmix.Gridmix -libjars \"$rumen_jar,$gridmix_jar\" \"-Dgridmix.min.file.size=0\" \"-Dgridmix.client.pending.queue.depth=$pending_queue_depth\" \"-Dgridmix.job-submission.policy=$policy\" \"-Dgridmix.client.submit.threads=$submit_threads\" \"-Dgridmix.submit.multiplier=$submit_multiplier\" \"-Dgridmix.job.type=$job_type\" \"-Dmapreduce.framework.name=$framework\" \"-Dtez.queue.name=$queue\" \"-Dmapreduce.job.queuename=$queue\" \"-Dmapred.job.queue.name=$queue\" \"-Dipc.client.connect.max.retries=3\" \"-Dgridmix.sleep.max-map-time=$max_sleep\" \"-Dgridmix.sleep.max-reduce-time=$max_sleep\"";
 
 for(my $i=0; $i < $num_runs; $i++){
