@@ -17,6 +17,7 @@ my $max_sleep = 500;
 my $luser = getpwuid($<) || 'ksingh';
 my $input_data = '1g';
 my $trace_path = undef;
+my $hadoop_heap_size = "2560";
 sub help_msg{
     my $exit_status = shift @_ || 0;
     print "Usage $0: $0 <Options>\n\t -t | --trace-path=<[REQUIRED] GridMix rumen trace absolute path>\n\t -n | --num-runs=<Number of GridMix runs, default 1>\n\t";
@@ -28,13 +29,14 @@ sub help_msg{
     print " -j | --job-type=<GridMix job types, Accepted values LOADJOB/SLEEPJOB, default: SLEEPJOB>\n\t";
     print " -r | --submit-threads=<GridMix Client submit threads, default: 5>\n\t -d | --pending-queue-depth=<GridMix pending queue depth, default: 10>\n\t";
     print " -m | --submit-multiplier=<gridmix.submit.multiplier:default: 0.0001. The multiplier to accelerate/decelerate the submission. The time separating two jobs multiplier factor>\n\t";
-    print " -e | --max-sleep=<-Dgridmix.sleep.max-map-time/-Dgridmix.sleep.max-reduce-time in milliseconds: default 500ms>\n";
+    print " -e | --max-sleep=<-Dgridmix.sleep.max-map-time/-Dgridmix.sleep.max-reduce-time in milliseconds: default 500ms>\n\t";
+    print " --hadoop-heap-size=<integer value of java heap size for hadoop in mb e.g --hadoop-heap-size=1536 for 1.5g default:2560 2.5g>\n";
     exit $exit_status;
 }
 GetOptions ("trace-path|t=s" => \$trace_path, "num-runs|n=i" => \$num_runs, "queue|q=s" => \$queue, "framework-name|f=s" => \$framework, "submit-resolver|s=s" => \$user_resolver,
             "users-file|u=s" => \$user_file, "submit-policy|p=s" => \$policy, "job-type|j=s" => \$job_type, "submit-threads|r=i" => \$submit_threads, 
             "submit-multiplier|m=f" => \$submit_multiplier, "max-sleep|e=i" => $max_sleep, "pending-queue-dept|d=i" => \$pending_queue_depth, "input-data-size|a=s" => \$input_data,
-            "output-path|o=s" => \$output_path, "help|h" => sub {help_msg(0)}) or die("Error in command line arguments\n");
+            "output-path|o=s" => \$output_path, "hadoop-heap-size=i" => \$hadoop_heap_size, "help|h" => sub {help_msg(0)}) or die("Error in command line arguments\n");
 unless($trace_path && -f $trace_path && -r $trace_path ){
     print STDERR "ERROR: Invalid trace-path specified. Not specified/Not file/Not readable\n";
     help_msg(1);
@@ -78,6 +80,8 @@ if ($user_resolver =~ /roundrobin/i){
 my $hadoop_classpath = "/usr/hdp/current/hadoop-mapreduce-client/hadoop-rumen.jar:/usr/hdp/current/hadoop-mapreduce-client/hadoop-gridmix.jar";
 $hadoop_classpath .= ":$ENV{'HADOOP_CLASSPATH'}" if ($ENV{'HADOOP_CLASSPATH'});
 $ENV{'HADOOP_CLASSPATH'} = $hadoop_classpath;
+$ENV{'HADOOP_HEAPSIZE'} = $hadoop_heap_size;
+$ENV{'HADOOP_CLIENT_OPTS'} = "-Xmx${hadoop_heap_size}m";
 my $common_cmd = "hadoop org.apache.hadoop.mapred.gridmix.Gridmix -libjars \"/usr/hdp/current/hadoop-mapreduce-client/hadoop-rumen.jar,/usr/hdp/current/hadoop-mapreduce-client/hadoop-gridmix.jar\" \"-Dgridmix.min.file.size=0\" \"-Dgridmix.client.pending.queue.depth=$pending_queue_depth\" \"-Dgridmix.job-submission.policy=$policy\" \"-Dgridmix.client.submit.threads=$submit_threads\" \"-Dgridmix.submit.multiplier=$submit_multiplier\" \"-Dgridmix.job.type=$job_type\" \"-Dmapreduce.framework.name=$framework\" \"-Dtez.queue.name=$queue\" \"-Dmapreduce.job.queuename=$queue\" \"-Dmapred.job.queue.name=$queue\" \"-Dipc.client.connect.max.retries=10\" \"-Dgridmix.sleep.max-map-time=$max_sleep\" \"-Dgridmix.sleep.max-reduce-time=$max_sleep\"";
 
 for(my $i=0; $i < $num_runs; $i++){
