@@ -27,7 +27,7 @@ def get_jmx(url, headers={'Accept': 'application/json','Content-Type': 'applicat
             return data #['beans']
     except urllib2.URLError, e:
          if isinstance(e, urllib2.HTTPError):
-             print sys.stderr, str(e.code) + " " + str(e.msg)
+             print>> sys.stderr, str(e.code) + " " + str(e.msg)
 
     return None
 
