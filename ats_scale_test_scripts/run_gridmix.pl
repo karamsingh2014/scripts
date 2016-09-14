@@ -86,6 +86,7 @@ for(my $i=0; $i < $num_runs; $i++){
     my $work_dir = "$gm_root_dir/work";
     my $output_dir = "$gm_root_dir/out";
     my $cmd = "$common_cmd \"-Dgridmix.output.directory=$output_dir\" ";
+    system("hadoop fs -rm -r -skipTrash $gm_root_dir");
     if ($user_resolver =~ /submit/i){
         $cmd .= " \"-Dgridmix.user.resolve.class=org.apache.hadoop.mapred.gridmix.SubmitterUserResolver\"-generate $input_data $work_dir file://$trace_path >$outfile 2>&1";
         system($cmd);

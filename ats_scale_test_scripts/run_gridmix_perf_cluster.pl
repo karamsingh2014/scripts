@@ -46,7 +46,7 @@ sub help_msg{
 }
 GetOptions ("trace-path|t=s" => \$trace_path, "num-runs|n=i" => \$num_runs, "queue|q=s" => \$queue, "framework-name|f=s" => \$framework, "submit-resolver|s=s" => \$user_resolver,
             "users-file|u=s" => \$user_file, "submit-policy|p=s" => \$policy, "job-type|j=s" => \$job_type, "submit-threads|r=i" => \$submit_threads, 
-            "submit-multiplier|m=f" => \$submit_multiplier, "max-sleep|e=i" => $max_sleep, "pending-queue-dept|d=i" => \$pending_queue_depth, "input-data-size|a=s" => \$input_data,
+            "submit-multiplier|m=f" => \$submit_multiplier, "max-sleep|e=i" => \$max_sleep, "pending-queue-dept|d=i" => \$pending_queue_depth, "input-data-size|a=s" => \$input_data,
             "output-path|o=s" => \$output_path, "hadoop-home=s" => \$hadoop_home, "hdfs-home=s" => \$hdfs_home, "mr-home=s" =>\$mr_home, "yarn-home=s" => \$yarn_home,
             "java-home=s" => \$java_home, "hadoop-conf=s" => \$hadoop_conf, "tez-home=s" =>\$tez_home, "tez-conf=s" => \$tez_conf, "hadoop-version=s" => \$hadoop_version,
             "help|h" => sub {help_msg(0)}) or die("Error in command line arguments\n");
@@ -132,6 +132,7 @@ $ENV{'HADOOP_CONF_DIR'} = $hadoop_conf;
 $ENV{'HADOOP_LIBEXEC_DIR'} = $hadoop_libexec_dir;
 $ENV{'TEZ_HOME'} = $tez_home;
 $ENV{'TEZ_CONF_DIR'} = $tez_conf;
+$ENV{HADOOP_HEAPSIZE} = '2560';
 my $common_cmd = "$hadoop_home/bin/hadoop org.apache.hadoop.mapred.gridmix.Gridmix -libjars \"$rumen_jar,$gridmix_jar\" \"-Dgridmix.min.file.size=0\" \"-Dgridmix.client.pending.queue.depth=$pending_queue_depth\" \"-Dgridmix.job-submission.policy=$policy\" \"-Dgridmix.client.submit.threads=$submit_threads\" \"-Dgridmix.submit.multiplier=$submit_multiplier\" \"-Dgridmix.job.type=$job_type\" \"-Dmapreduce.framework.name=$framework\" \"-Dtez.queue.name=$queue\" \"-Dmapreduce.job.queuename=$queue\" \"-Dmapred.job.queue.name=$queue\" \"-Dipc.client.connect.max.retries=3\" \"-Dgridmix.sleep.max-map-time=$max_sleep\" \"-Dgridmix.sleep.max-reduce-time=$max_sleep\"";
 
 for(my $i=0; $i < $num_runs; $i++){
@@ -141,6 +142,7 @@ for(my $i=0; $i < $num_runs; $i++){
     my $output_dir = "$gm_root_dir/out";
     my $cmd = "$common_cmd \"-Dgridmix.output.directory=$output_dir\" ";
     #print $user_resolver," $i\n";
+    system("$hadoop_home/bin/hadoop fs -rm -r -skipTrash $gm_root_dir");
     if ($user_resolver =~ /submit/i){
         $cmd .= " \"-Dgridmix.user.resolve.class=org.apache.hadoop.mapred.gridmix.SubmitterUserResolver\" -generate $input_data $work_dir file://$trace_path >$outfile 2>&1";
         system($cmd);
@@ -155,5 +157,6 @@ for(my $i=0; $i < $num_runs; $i++){
         system($cmd);
     }
     #system($cmd);
-    system("$hadoop_home/bin/hadoop fs -rm -r -skipTrash $gm_root_dir");  
+    system("$hadoop_home/bin/hadoop fs -rm -r -skipTrash $gm_root_dir"); 
+    #sleep(360); 
 }
